@@ -1,0 +1,66 @@
+model gcp
+uses "mmxprs", "mmodbc"; 
+
+declarations
+	Q_0 = 40
+	G = 1..9
+	Q : array(G) of integer
+	x : array(G) of mpvar
+	y : array(G,G) of mpvar
+end-declarations
+
+! Gem qualities
+Q(1) := 19
+Q(2) := 13
+Q(3) := 7
+Q(4) := 6
+Q(5) := 5
+Q(6) := 8
+Q(7) := 9
+Q(8) := 8
+Q(9) := 7
+
+! Constraints
+forall(j in G) do
+	sum(i in G) Q(i)*y(i,j) >= Q_0*x(j)
+end-do
+
+forall(i in G) do
+	sum(j in G) y(i,j) <= 1
+end-do
+
+forall(i in G) do
+	x(i) is_integer
+	forall(j in G) do
+		y(i,j) is_integer
+	end-do
+end-do
+
+! Objective function
+
+maximize(sum(i in G) x(i))
+
+writeln("Total number of gcp's: ", getobjval)
+
+waste := 0
+
+forall(j in G) do
+	 if getsol(x(j)) = 1 then
+	 	writeln("")
+	 	temp := 0
+		 forall(i in G) do
+	 		 if getsol(y(i,j)) = 1 then
+	 	 		write(i,", ")
+	 	 		temp := temp + Q(i)
+	 		 end-if
+	 	end-do
+	 	write(" total: ", temp)
+	 	if(temp > 40) then
+	 		waste := waste + (temp - 40)
+	 	end-if
+	 end-if
+end-do
+
+writeln("\n\nTotal waste: ", waste)
+
+end-model
